@@ -2,6 +2,11 @@
 	"luci-app-msd_lite": {
 		"description": "Grant UCI access for luci-app-msd_lite",
 		"read": {
+			"ubus": {
+						"luci.msd_lite": [
+								"stat"
+						]
+					},
 			"uci": [ "msd_lite" ]
 		},
 		"write": {

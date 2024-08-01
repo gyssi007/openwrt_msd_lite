@@ -1,0 +1,80 @@
+#!/bin/sh
+# Copyright 2022 Stan Grishin (stangri@melmac.ca)
+
+# TechRef: https://openwrt.org/docs/techref/rpcd
+# TESTS
+# ubus -v list luci.pbr
+# ubus -S call luci.pbr getInitList '{"name": "pbr" }'
+# ubus -S call luci.pbr getInitStatus '{"name": "pbr" }'
+# ubus -S call luci.pbr getPlatformSupport '{"name": "pbr" }'
+# ubus -S call luci.pbr getGateways '{"name": "pbr" }'
+# ubus -S call luci.pbr getInterfaces '{"name": "pbr" }'
+
+. /usr/share/libubox/jshn.sh
+
+# 定义一个函数来获取和处理stat
+get_stat() {
+    # HTTP请求URL
+    url="http://127.0.0.1:7088/stat"
+
+    # 使用wget获取字符串
+    input_string=$(wget -qO- "$url")
+
+    # 提取"Clients count", "Rate in"和"Rate out"信息
+    clients_count=$(echo "$input_string" | sed -n 's/.*Clients count: \([0-9]\+\).*/\1/p')
+    rate_in=$(echo "$input_string" | sed -n 's/.*Rate in: \([0-9]\+\) mbps.*/\1/p')
+    rate_out=$(echo "$input_string" | sed -n 's/.*Rate out: \([0-9]\+\) mbps.*/\1/p')
+
+    # 生成JSON格式输出
+    json_output="{\"clients\":["
+    first=true
+    for count in $clients_count; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            json_output="${json_output},"
+        fi
+        json_output="${json_output}${count}"
+    done
+    json_output="${json_output}],\"ratein\":["
+    first=true
+    for rate in $rate_in; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            json_output="${json_output},"
+        fi
+        json_output="${json_output}${rate}"
+    done
+    json_output="${json_output}],\"rateout\":["
+    first=true
+    for rate in $rate_out; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            json_output="${json_output},"
+        fi
+        json_output="${json_output}${rate}"
+    done
+    json_output="${json_output}]}"
+    
+    # 输出结果
+    echo "$json_output"
+}
+
+case "$1" in
+    list)
+        json_init
+        json_add_object "stat"
+        json_close_object
+        json_dump
+        json_cleanup
+        ;;
+    call)
+        case "$2" in
+            stat)
+                get_stat
+                ;;
+        esac
+        ;;
+esac
