@@ -23,7 +23,7 @@ return view.extend({
 		return uci.load('msd_lite').then(function() {
 			var address = uci.get_first('msd_lite', 'instance', 'address');
 			var enabled = uci.get_first('msd_lite', 'instance', 'enabled');
-			var url = `http://${address[0]}/stat`
+			var url = `http://${address[0]}/stat`;
 
 			if(enabled == 0) {
 				return { value: 'msd lite is disabled.', rows:25 };
