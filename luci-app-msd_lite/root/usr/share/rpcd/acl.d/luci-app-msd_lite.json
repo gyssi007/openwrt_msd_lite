@@ -2,11 +2,14 @@
 	"luci-app-msd_lite": {
 		"description": "Grant UCI access for luci-app-msd_lite",
 		"read": {
+			"file": {
+				"/usr/bin/wget": [ "exec" ]
+			},
 			"ubus": {
-						"luci.msd_lite": [
-								"stat"
-						]
-					},
+				"luci.msd_lite": [
+						"stat"
+				]
+			},
 			"uci": [ "msd_lite" ]
 		},
 		"write": {
